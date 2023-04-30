@@ -6,6 +6,13 @@ import pprint
 import requests
 import re
 
+"""
+
+This is designed to convert a CSV of a cast list with optional comments and images
+and convert it into a .pla file that can be imported into WaveTool 3.
+
+"""
+
 
 def import_castlist(castlist_file):
     # Import castlist from CSV file

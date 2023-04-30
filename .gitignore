@@ -166,3 +166,4 @@ cython_debug/
 *.pla
 pyvenv.cfg
 bin/
+*.wip
