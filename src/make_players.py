@@ -3,6 +3,8 @@ import os
 import csv
 import sys
 import pprint
+import requests
+import re
 
 
 def import_castlist(castlist_file):
@@ -11,29 +13,64 @@ def import_castlist(castlist_file):
     with open(castlist_file, newline="") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            if "Real Name" not in row:
-                real_name = ""
-            else:
+            real_name = ""
+            character = ""
+            comments = ""
+            image = None
+            if "Real Name" in row:
                 real_name = row["Real Name"]
-            if "Character" not in row:
-                character = ""
-            else:
+            if "Character" in row:
                 character = row["Character"]
+            if "Comments" in row:
+                comments = row["Comments"]
+            if "Image" in row:
+                image = row["Image"]
             if real_name == "" and character == "":
                 continue
-            character = {"character": character, "real_name": real_name}
+            character = {
+                "character": character,
+                "real_name": real_name,
+                "comments": comments,
+                "image": image,
+            }
             castlist.append(character)
     return castlist
 
 
 def create_wavetool_castlist(castlist, output_file):
     with open("defaultimage.tiff", "rb") as image:
-        image = image.read()
+        default_image = image.read()
     wavetool_castlist = []
     for row in castlist:
+        print(f"Processing {row['character']} played by {row['real_name']}")
+        image = default_image
+        if row["image"] is not None:
+            if re.match(r"^(http|https)\:\/\/", row["image"]):
+                # url is online, so we'll use requests to get the image
+                try:
+                    print(
+                        "  Downloading image from " + row["image"] + "... ",
+                        end="",
+                    )
+                    r = requests.get(row["image"])
+                    if r.ok:
+                        image = r.content
+
+                        print("Success!")
+                    else:
+                        print("Failed!")
+                except Exception as e:
+                    print("Failed! {}\n".format(e))
+            else:
+                try:
+                    character_image_fp = open(row["image"], "rb")
+                    image = character_image_fp.read()
+                    character_image_fp.close()
+                except IOError:
+                    image = default_image
         cast_dict = dict(
-            Comments="",
-            Compressed=True,
+            Comments=row["comments"],
+            Compressed=False,
             Image=image,
             Name=row["real_name"],
             RoleName=row["character"],
@@ -63,8 +100,9 @@ if __name__ == "__main__":
     output_file = sys.argv[2]
     castlist = import_castlist(castlist_file)
     if os.path.isfile(output_file):
-        print("Output file already exists. Do you want to overwrite? (y/n)")
-        overwrite = input()
+        overwrite = input(
+            "Output file already exists. Do you want to overwrite? (y/n): "
+        )
         if overwrite != "y":
             exit(0)
     try:
