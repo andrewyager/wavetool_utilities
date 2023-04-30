@@ -71,7 +71,7 @@ for example:
 
 We recommend creating a virtualenv. Download or clone the repository and then run
 
-	git clone https://github.com/andrewyager/wavetool_players_creator.git
+	git clone https://github.com/andrewyager/wavetool_utilities.git
 	cd wavetool_players_creator
 	virtualenv .
 	source bin/activate
