@@ -135,7 +135,7 @@ def import_castlist(castlist_file):
     return castlist
 
 
-def create_wavetool_castlist(castlist, output_file, castlist_path):
+def create_mic_cards(castlist, output_file, castlist_path):
     with open(
         os.path.join(
             str(pathlib.Path(__file__).parent.resolve()), "../defaultimage.tiff"
@@ -283,7 +283,7 @@ if __name__ == "__main__":
             exit(0)
     try:
         output_file_handler = open(output_file, "wb")
-        create_wavetool_castlist(castlist, output_file_handler, castlist_path)
+        create_mic_cards(castlist, output_file_handler, castlist_path)
     except IOError:
         print("Could not open file: " + output_file)
         traceback.print_exc()
