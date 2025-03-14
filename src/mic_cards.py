@@ -11,6 +11,8 @@ from io import BytesIO
 import pathlib
 import traceback
 import face_recognition
+from fpdf import FPDF
+from fpdf.enums import XPos, YPos
 
 """
 
@@ -24,9 +26,7 @@ def crop_image(image_buffer):
 
     # Load image and crop to remove whitespace
     image = face_recognition.load_image_file(BytesIO(image_buffer))
-    face_locations = face_recognition.face_locations(
-        image, number_of_times_to_upsample=0, model="cnn"
-    )
+    face_locations = face_recognition.face_locations(image)
     image = PILImage.open(BytesIO(image_buffer))
     if len(face_locations) == 0:
         print("No faces found in image")
@@ -101,6 +101,7 @@ def import_castlist(castlist_file):
             image = None
             crop = False
             resize = False
+            channel = ""
             if "Real Name" in row:
                 real_name = row["Real Name"]
             if "Character" in row:
@@ -116,7 +117,9 @@ def import_castlist(castlist_file):
             if "Resize" in row:
                 resize = row["Resize"] == "1"
             else:
-                resize = True
+                resize = False
+            if "Channel" in row:
+                channel = row["Channel"]
             if real_name == "" and character == "":
                 continue
             character = {
@@ -126,6 +129,7 @@ def import_castlist(castlist_file):
                 "image": image,
                 "crop": crop,
                 "resize": resize,
+                "channel": channel,
             }
             castlist.append(character)
     return castlist
@@ -192,17 +196,71 @@ def create_wavetool_castlist(castlist, output_file, castlist_path):
             Name=row["real_name"],
             RoleName=row["character"],
             Scaled=False,
+            Channel=row["channel"],
             Version=1,
         )
         wavetool_castlist.append(cast_dict)
-    plistlib.dump(wavetool_castlist, output_file)
+    pdf = FPDF(format="A4")
+    pdf.set_top_margin(25)
+    pdf.set_left_margin(25)
+    pdf.set_right_margin(25)
+    bg_path = os.path.join(
+        str(pathlib.Path(__file__).parent.resolve()), "../pdfbg.svg"
+    )
+    pdf.set_page_background(bg_path)
+    for character in wavetool_castlist:
+        pdf.add_page()
+        pdf.set_font("helvetica", "B", 12)
+        pdf.cell(
+            0,
+            10,
+            text=f"Channel {character['Channel']}",
+            new_y=YPos.NEXT,
+            new_x=XPos.LMARGIN,
+            align="R",
+        )
+        pdf.set_font("helvetica", "B", 24)
+        pdf.cell(
+            0,
+            10,
+            text=character["RoleName"],
+            new_x=XPos.LMARGIN,
+            new_y=YPos.NEXT,
+            align="C",
+        )
+        pdf.set_font("helvetica", "", 12)
+        pdf.cell(
+            0,
+            10,
+            text=character["Name"],
+            new_x=XPos.LMARGIN,
+            new_y=YPos.NEXT,
+            align="C",
+        )
+        pdf.cell(
+            0,
+            10,
+            text=character["Comments"],
+            new_x=XPos.LMARGIN,
+            new_y=YPos.NEXT,
+            align="C",
+        )
+        box = 75
+        pdf.image(
+            character["Image"],
+            w=box,
+            h=box,
+            x=pdf.w / 2 - box / 2,
+            keep_aspect_ratio=True,
+        )
+    pdf.output(output_file)
 
 
 if __name__ == "__main__":
     # Import castlist from CSV file
 
     if len(sys.argv) < 3:
-        print("Usage: python make_players.py <castlist.csv> <output.pla>")
+        print("Usage: python make_players.py <castlist.csv> <output.pdf>")
         exit(1)
 
     if sys.argv[1] == None:
