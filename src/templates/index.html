@@ -1,0 +1,28 @@
+<!-- templates/index.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Wavetool Utilities Upload</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container py-4">
+    <h1>Wavetool Utilities Uploader</h1>
+    {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+    <form method="post" enctype="multipart/form-data">  <!-- Note enctype for file upload  [oai_citation_attribution:10‡flask.palletsprojects.com](https://flask.palletsprojects.com/en/stable/patterns/fileuploads/#:~:text=1.%20A%20%60,is%20placed%20in%20that%20form) -->
+      <div class="mb-3">
+        <label for="csvFile" class="form-label">CSV File:</label>
+        <input type="file" name="csv_file" id="csvFile" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label for="zipFile" class="form-label">Images ZIP (optional):</label>
+        <input type="file" name="zip_file" id="zipFile" class="form-control">
+      </div>
+      <button type="submit" class="btn btn-primary">Process</button>
+    </form>
+  </div>
+</body>
+</html>
