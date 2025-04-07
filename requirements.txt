@@ -30,7 +30,7 @@ proto-plus==1.26.1
 protobuf==6.30.2
 pyasn1==0.6.1
 pyasn1_modules==0.4.1
-pycparser==2.21
+pycparser==2.22
 pyparsing==3.2.1
 python-dotenv==1.0.1
 pyvips==2.2.3
