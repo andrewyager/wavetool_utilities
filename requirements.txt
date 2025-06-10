@@ -34,7 +34,7 @@ pycparser==2.21
 pyparsing==3.2.1
 python-dotenv==1.0.1
 pyvips==2.2.1
-requests==2.32.3
+requests==2.32.4
 rsa==4.9
 soupsieve==2.4.1
 uritemplate==4.1.1
